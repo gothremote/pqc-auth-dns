@@ -3,8 +3,8 @@ PQC-aware DNS configuration for mgrillere.com authoritative name server meant as
 
 ## Architecture
 
-            mgrillere.com
-                |
+  mgrillere.com
+       |
    _____________________________
   |          |          |       |
 falcon    baseline    both    bogus   
