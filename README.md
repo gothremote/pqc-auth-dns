@@ -17,7 +17,7 @@ The following subzone are secured by algorithms specified as follows:
 - Bogus is secured using KSK and ZSK using Falcon-512 and 10248 Bits keys BUT the public key of the ZSK has been tweak to be "wrong", i.e not correspond to the private key
 
 ## Use Case
-The baseline zonne is used to have a reference point in term of traffic and also to have a zone wich is compliant to nowadays supported algorithms.
-The falcon zone is a playground zone to test Flacon-512 validation for recursor and also to benchmark traffic created by PQC algorithm.
-The both zone is an example of what could a transition zone look like in the future, also good to benchmark the packet size and created traffic.
-The bogus zone is a test zone to ensure that the validation does not accept everything and no recursor correctly configured should be able to validate answer coming from this zone.
+* The baseline zone is used to have a reference point in term of traffic and also to have a zone wich is compliant to nowadays supported algorithms.
+* The falcon zone is a playground zone to test Flacon-512 validation for recursor and also to benchmark traffic created by PQC algorithm.
+* The both zone is an example of what could a transition zone look like in the future, also good to benchmark the packet size and created traffic.
+* The bogus zone is a test zone to ensure that the validation does not accept everything and no recursor correctly configured should be able to validate answer coming from this zone.
