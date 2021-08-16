@@ -48,7 +48,7 @@ EOF
 cat <<EOF > $BOGUS_ZSK
 Private-key-format: v1.2
 Algorithm: 17 (Falcon)
--> Your generated falcon key
+-> Your generated falcon key, BUT replace some character in the public key part to render it bogus
 EOF
 
 cat <<EOF > $BOGUS_KSK
