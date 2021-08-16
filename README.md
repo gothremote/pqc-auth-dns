@@ -2,13 +2,13 @@
 PQC-aware DNS configuration for mgrillere.com authoritative name server meant as playground
 
 ## Architecture
-
-  mgrillere.com
-       |
+```
+           mgrillere.com 
+                 |
    _____________________________
   |          |          |       |
 falcon    baseline    both    bogus   
-
+```
 The upper zone is secured with ECDSA algorithm 13 and it's DS record is published to ensure the right behavior of the chain-of-trust.
 The following subzone are secured by algorithms specified as follows:
 - Falcon is secured with ZSK and KSK using Falcon-512 (Algorithm 17) and 10248 Bits key
