@@ -1,0 +1,27 @@
+version: '3.7'
+
+services:
+  authdb:
+    build: authdb
+    init: true
+    user: mysql:mysql
+    volumes:
+      - dblord_mysql:/var/lib/mysql
+    restart: unless-stopped
+
+  auth:
+    image: gothremote/pdns-auth:latest
+    init: true
+    ports:
+      - 53:53/udp
+      - 53:53/tcp
+    depends_on:
+      - authdb
+    volumes:
+      - ./auth/pdns.conf:/etc/powerdns/pdns.conf
+      - ./auth/init-zones:/usr/local/bin/init-zones
+    restart: unless-stopped
+
+volumes:
+  dblord_mysql:
+

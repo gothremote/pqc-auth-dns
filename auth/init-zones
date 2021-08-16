@@ -1,0 +1,117 @@
+!/usr/bin/env bash
+
+Z=mgrillere.com
+
+# Root zone key
+KEYFILEK=/tmp/ksk.key
+
+# Sub-zone keys
+FALCON_KSK=/tmp/falcon.ksk.key
+FALCON_ZSK=/tmp/falcon.zsk.key
+
+BASE_KSK=/tmp/baseline.ksk.key
+BASE_ZSK=/tmp/baseline.zsk.key
+
+BOGUS_ZSK=/tmp/bogus.zsk.key
+BOGUS_KSK=/tmp/bogus.ksk.key
+
+cat <<EOF > $KEYFILEK
+Private-key-format: v1.2
+Algorithm: 13 (ECDSAP256SHA256)
+-> Your generated ECDSA key corresping to DS record of upper zone
+EOF
+
+cat <<EOF > $FALCON_ZSK
+Private-key-format: v1.2
+Algorithm: 17 (Falcon)
+-> Your generated falcon key
+EOF
+
+cat <<EOF > $FALCON_KSK
+Private-key-format: v1.2
+Algorithm: 17 (Falcon)
+-> Your generated falcon key
+EOF
+
+cat <<EOF > $BASE_ZSK
+Private-key-format: v1.2
+Algorithm: 16 (ED448)
+-> Your generated ed448 key
+EOF
+
+cat <<EOF > $BASE_KSK
+Private-key-format: v1.2
+Algorithm: 16 (ED448)
+-> Your generated ed448 key
+EOF
+
+cat <<EOF > $BOGUS_ZSK
+Private-key-format: v1.2
+Algorithm: 17 (Falcon)
+-> Your generated falcon key
+EOF
+
+cat <<EOF > $BOGUS_KSK
+Private-key-format: v1.2
+Algorithm: 17 (Falcon)
+-> Your generated falcon key
+EOF
+
+pdnsutil create-zone $Z
+pdnsutil create-zone falcon.$Z
+pdnsutil create-zone baseline.$Z
+pdnsutil create-zone bogus.$Z
+pdnsutil create-zone both.$Z
+
+# Import keys
+pdnsutil import-zone-key $Z $KEYFILEK KSK
+
+pdnsutil import-zone-key falcon.$Z $FALCON_KSK KSK
+pdnsutil import-zone-key falcon.$Z $FALCON_ZSK ZSK
+
+pdnsutil import-zone-key baseline.$Z $BASE_KSK KSK
+pdnsutil import-zone-key baseline.$Z $BASE_ZSK ZSK
+
+pdnsutil import-zone-key bogus.$Z $BOGUS_KSK KSK
+pdnsutil import-zone-key bogus.$Z $BOGUS_ZSK ZSK
+
+pdnsutil import-zone-key both.$Z $BASE_KSK KSK
+pdnsutil import-zone-key both.$Z $BASE_ZSK ZSK
+pdnsutil import-zone-key both.$Z $FALCON_KSK KSK
+pdnsutil import-zone-key both.$Z $FALCON_ZSK ZSK
+
+# zone content
+pdnsutil add-record $Z @ A 157.90.126.56
+pdnsutil add-record $Z dns1 A 157.90.126.56
+pdnsutil add-record $Z dns2 A 168.119.174.84
+pdnsutil add-record $Z @ NS dns{1,2}.mgrillere.com
+
+pdnsutil add-record $Z falcon NS dns{1,2}.mgrillere.com
+pdnsutil add-record $Z baseline NS dns{1,2}.mgrillere.com
+pdnsutil add-record $Z bogus NS dns{1,2}.mgrillere.com
+pdnsutil add-record $Z both NS dns{1,2}.mgrillere.com
+
+# Set right DS record for validation
+pdnsutil add-record $Z falcon DS "$(pdnsutil export-zone-ds falcon.mgrillere.com | grep SHA256 | grep -Eo '[0-9abcdef ]{16,256}')"
+pdnsutil add-record $Z baseline DS "$(pdnsutil export-zone-ds baseline.mgrillere.com | grep SHA256 | grep -Eo '[0-9abcdef ]{16,256}')"
+pdnsutil add-record $Z bogus DS "$(pdnsutil export-zone-ds bogus.mgrillere.com | grep SHA256 | grep -Eo '[0-9abcdef ]{16,256}')"
+# Both has two DS record, as signed with Ed448 and Falcon keys
+pdnsutil add-record $Z both DS "$(pdnsutil export-zone-ds both.mgrillere.com | grep SHA256 | grep 16 | grep -Eo '[0-9abcdef ]{16,256}')"
+pdnsutil add-record $Z both DS "$(pdnsutil export-zone-ds both.mgrillere.com | grep SHA256 | grep 17 | grep -Eo '[0-9abcdef ]{16,256}')"
+
+# Set NS record and dummy IP A record for test
+pdnsutil add-record falcon.$Z @ NS dns{1,2}.mgrillere.com
+pdnsutil add-record falcon.$Z @ A 157.90.126.56
+
+pdnsutil add-record baseline.$Z @ NS dns{1,2}.mgrillere.com
+pdnsutil add-record baseline.$Z @ A 168.119.174.84
+
+pdnsutil add-record bogus.$Z @ NS dns{1,2}.mgrillere.com
+pdnsutil add-record bogus.$Z @ A 1.1.1.1
+
+pdnsutil add-record both.$Z @ NS dns{1,2}.mgrillere.com
+pdnsutil add-record both.$Z @ A 8.8.8.8
+
+
+# finish DNSSEC setup
+pdnsutil rectify-all-zones
